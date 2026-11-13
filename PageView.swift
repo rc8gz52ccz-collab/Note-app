@@ -44,25 +44,50 @@ struct PageView: View {
                     selectedPageID = page.id
                 }
             
-            ZStack {
-                ForEach($page.latexAnnotations) { $annotation in 
-                    let isSelected = (selectedAnnotationID == annotation.id)
+            GeometryReader { geometry in
+                let scale = min(
+                    geometry.size.width / A4Width,
+                    geometry.size.height / A4Height
+                )
+                
+                ZStack(alignment: .topLeading) {
+                    Rectangle()
+                        .stroke(Color.gray, lineWidth: 0.8)
+                        .frame(width: A4Width, height: A4Height)
                     
-                    MathJaxView(latex: annotation.latexString)
-                        .fixedSize()
-                        .padding(4)
-                        .cornerRadius(6)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(isSelected ? Color.neonBlue : Color.clear, lineWidth: 0.6)
-                        )
-                        .onTapGesture {
-                            selectedAnnotationID = annotation.id
-                        }
-                        .contextMenu {
-                            menuContent(for: annotation)
-                        }
-                }  
+                    ZStack {
+                        ForEach($page.latexAnnotations) { $annotation in 
+                            let isSelected = (selectedAnnotationID == annotation.id)
+                            
+                            MathJaxView(latex: annotation.latexString)
+                                .fixedSize()
+                                .padding(4)
+                                .cornerRadius(6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(isSelected ? Color.neonBlue : Color.clear, lineWidth: 0.6)
+                                )
+                                .onTapGesture {
+                                    selectedAnnotationID = annotation.id
+                                }
+                                .contextMenu {
+                                    menuContent(for: annotation)
+                                }
+                        }  
+                    }
+                }
+                .frame(width: A4Width, height: A4Height)
+                .scaleEffect(scale, anchor: .topLeading)
+                .frame(
+                    width: A4Width * scale,
+                    height: A4Height * scale,
+                    alignment: .topLeading
+                )
+                .frame(
+                    maxWidth: .infinity,
+                    maxHeight: .infinity,
+                    alignment: .center
+                )
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
